@@ -1,0 +1,261 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<!-- <meta http-equiv="Content-Type" content="text/html; charset=gb2312"> -->
+	<title>华视读身份证</title>
+	<script type="text/javascript">
+		function getVerSion() {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var result = CertCtl.getVersion();
+				document.getElementById("result").value = result;
+			} catch (e) {
+			}
+		}
+		function getSamId() {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var result = CertCtl.getSAMID();
+				document.getElementById("result").value = result;
+			} catch (e) {
+			}
+		}
+		function toJson(str) {
+			//var obj = JSON.parse(str);
+			//return obj;
+			return eval('(' + str + ')');
+		}
+		function clearForm() {
+			document.getElementById("timeElapsed").value = "";
+			document.getElementById("partyName").value = "";
+			document.getElementById("gender").value = "";
+			document.getElementById("nation").value = "";
+			document.getElementById("bornDay").value = "";
+			document.getElementById("certAddress").value = "";
+			document.getElementById("certNumber").value = "";
+			document.getElementById("certOrg").value = "";
+			document.getElementById("effDate").value = "";
+			document.getElementById("expDate").value = "";
+			document.getElementById("result").value = "";
+		}
+		function connect(callback) {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var result = CertCtl.connect();
+				document.getElementById("result").value = result;
+				if(callback){
+					callback();
+				}
+			} catch (e) {
+			}
+		}
+		function disconnect() {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var result = CertCtl.disconnect();
+				document.getElementById("result").value = result;
+			} catch (e) {
+			}
+		}
+		function getStatus() {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var result = CertCtl.getStatus();
+				document.getElementById("result").value = result;
+			} catch (e) {
+			}
+		}
+		var  readCert=function() {
+			clearForm();
+
+			var CertCtl = document.getElementById("CertCtl");
+
+			try {
+				var startDt = new Date();
+				var result = CertCtl.readCert();
+				var endDt = new Date();
+
+				document.getElementById("timeElapsed").value = (endDt.getTime() - startDt.getTime()) + "毫秒";
+				document.getElementById("result").value = result;
+
+				var resultObj = toJson(result);
+				if (resultObj.resultFlag == 0) {
+					document.getElementById("partyName").value = resultObj.resultContent.partyName;
+					document.getElementById("gender").value = resultObj.resultContent.gender;
+					document.getElementById("nation").value = resultObj.resultContent.nation;
+					document.getElementById("bornDay").value = resultObj.resultContent.bornDay;
+					document.getElementById("certAddress").value = resultObj.resultContent.certAddress;
+					document.getElementById("certNumber").value = resultObj.resultContent.certNumber;
+					document.getElementById("certOrg").value = resultObj.resultContent.certOrg;
+					document.getElementById("effDate").value = resultObj.resultContent.effDate;
+					document.getElementById("expDate").value = resultObj.resultContent.expDate;
+					document.getElementById("PhotoStr").src = "data:image/jpeg;base64," + resultObj.resultContent.identityPic;
+				}
+			} catch (e) {
+				alert(e);
+			}
+		}
+		function conv2base64() {
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var jpgPath = document.getElementById("inputJpgPath").value;
+				var result;
+				result = CertCtl.ConvJpgToBase64File(jpgPath);
+				document.getElementById("outputBase64File").value = result;
+			} catch (e) {
+			}
+		}
+
+		function convBase64ToJpg() {
+			var CertCtl = document.getElementById("CertCtl");
+			try {
+				var jpgPath = document.getElementById("decodeJpgPath").value;
+				var base64Data = document.getElementById("base64Input").value;
+				var result;
+				result = CertCtl.ConvBase64ToJpg(base64Data, jpgPath);
+				alert(result);
+			} catch (e) {
+			}
+		}
+
+
+
+		
+        //自定义读卡
+		function myReadCard(){
+			//首先判断状态
+           var status= myGetStatus();
+		//    console.log(status);
+		   if(status.status===0){
+			   //已经链接
+			   readCert();
+		   }else{
+			   //未链接
+			   connect(readCert);
+		   }
+		}
+        function myGetStatus(){
+			var CertCtl = document.getElementById("CertCtl");
+			return CertCtl.getStatus();
+		}
+
+
+	</script>
+</head>
+
+<body bgcolor="#D2F0FF">
+
+	<h1 style="text-align:center;color:#5555FF;">身份证阅读器USB接入测试页面	</h1>
+
+	<table border="0" width="50%" cellpadding="0" cellspacing="0" style="padding-left:100px;">
+		<tr>
+			<td><input type="button" value="测试" onclick="myReadCard()"></td>
+			<td><input type="button" value="连接" onclick="connect()"></td>
+			<td><input type="button" value="状态" onclick="getStatus()"></td>
+			<td><input type="button" value="版本" onclick="getVerSion()"></td>
+			<td><input type="button" value="SamID" onclick="getSamId()"></td>
+			<td><input type="button" value="读卡" onclick="readCert()"></td>
+			<td><input type="button" value="断开" onclick="disconnect()"></td>
+		</tr>
+	</table>
+	<br />
+	<table border="0" width="100%" cellpadding="0" cellspacing="10">
+		<tbody>
+			<tr>
+				<td align="right">读卡时间：</td>
+				<td><input type="text" id="timeElapsed" size="49" style="width:400px;" readonly="readonly"></td>
+			</tr>
+
+			<tr>
+				<td align="right">姓名：</td>
+				<td><input type="text" id="partyName" size="49" style="width:400px;" readonly="readonly">(要求中间，两头都没有空格)
+				</td>
+				<td><img id="PhotoStr" src="" alt="Base64 image"></td>
+			</tr>
+			<tr>
+				<td align="right">性别：</td>
+				<td><input type="text" id="gender" size="49" style="width:400px;"
+						readonly="readonly">(取值为“1”（表示“男”）或“0”（表示“女”）)</td>
+			</tr>
+			<tr>
+				<td align="right">民族：</td>
+				<td><input type="text" id="nation" size="49" style="width:400px;" readonly="readonly">(汉字即可)</td>
+			</tr>
+			<tr>
+				<td align="right">出生日期：</td>
+				<td><input type="text" id="bornDay" size="49" style="width:400px;"
+						readonly="readonly">(要求格式为:yyyyMMdd，长度为8)</td>
+			</tr>
+			<tr>
+				<td align="right">住址：</td>
+				<td><input type="text" id="certAddress" size="49" style="width:400px;" readonly="readonly"></td>
+			</tr>
+			<tr>
+				<td align="right">身份证号：</td>
+				<td><input type="text" id="certNumber" size="49" style="color:#FF0000;width:400px;"
+						readonly="readonly">(居民身份号码，长度18位)</td>
+			</tr>
+			<tr>
+				<td align="right">签发机关：</td>
+				<td><input type="text" id="certOrg" size="49" style="width:400px;" readonly="readonly"></td>
+			</tr>
+			<tr>
+				<td align="right">开始期限：</td>
+				<td><input type="text" id="effDate" size="49" style="width:400px;"
+						readonly="readonly">(要求格式为:yyyyMMdd，长度为8)</td>
+			</tr>
+			<tr>
+				<td align="right">结束期限：</td>
+				<td><input type="text" id="expDate" size="49" style="width:400px;"
+						readonly="readonly">(要求格式为:yyyyMMdd，长度为8，或者是“长期”)</td>
+			</tr>
+			<tr>
+				<td align="right">结果：</td>
+				<td><textarea id="result" rows="8" cols="47" style="width:400px;" readonly="readonly"></textarea></td>
+			</tr>
+
+			<tr>
+				<td align="right">jpg路径：</td>
+				<td><input type="text" id="inputJpgPath" size="49" style="width:400px;"></td>
+			</tr>
+
+			<tr>
+				<td align="right">base64数据：</td>
+				<td><textarea id="outputBase64File" rows="8" cols="47" style="width:400px;"></textarea><input
+						type="button" value="转码" onclick="conv2base64()"></td>
+			</tr>
+
+			<tr>
+				<td align="right">base64数据：</td>
+				<td><textarea id="base64Input" rows="8" cols="47" style="width:400px;"></textarea></td>
+			</tr>
+
+			<tr>
+				<td align="right">解码jpg路径：</td>
+				<td><input type="text" id="decodeJpgPath" size="49" style="width:400px;"><input type="button" value="解码"
+						onclick="convBase64ToJpg()"></td>
+			</tr>
+
+
+		</tbody>
+	</table>
+
+	<object id="CertCtl" type="application/cert-reader" width="0" height="0">
+		<p style="color:#FF0000;">控件不可用，可能未正确安装控件及驱动，或者控件未启用。</p>
+	</object>
+
+</body>
+
+</html>
